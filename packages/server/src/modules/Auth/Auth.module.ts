@@ -43,6 +43,8 @@ import { AuthApiKeysController } from './AuthApiKeys.controllers';
 import { AuthApiKeyAuthorizeService } from './commands/AuthApiKeyAuthorization.service';
 import { GenerateApiKey } from './commands/GenerateApiKey.service';
 import { GetApiKeysService } from './queries/GetApiKeys.service';
+import { VidaOidcController } from './oidc/VidaOidc.controller';
+import { VidaOidcService } from './oidc/VidaOidc.service';
 
 const models = [
   InjectSystemModel(PasswordReset),
@@ -51,7 +53,12 @@ const models = [
 ];
 
 @Module({
-  controllers: [AuthController, AuthedController, AuthApiKeysController],
+  controllers: [
+    AuthController,
+    AuthedController,
+    AuthApiKeysController,
+    VidaOidcController,
+  ],
   imports: [
     MailModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -98,6 +105,7 @@ const models = [
     AuthApiKeyAuthorizeService,
     GenerateApiKey,
     GetApiKeysService,
+    VidaOidcService,
     JwtAuthGuard,
     {
       provide: APP_GUARD,
