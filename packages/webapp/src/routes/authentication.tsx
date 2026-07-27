@@ -5,6 +5,14 @@ const BASE_URL = '/auth';
 
 export default [
   {
+    path: `${BASE_URL}/oidc/callback`,
+    component: lazy(() =>
+      import('@/containers/Authentication/OidcCallback').then((m) => ({
+        default: m.OidcCallback,
+      })),
+    ),
+  },
+  {
     path: `${BASE_URL}/login`,
     component: lazy(() =>
       import('@/containers/Authentication/Login').then((m) => ({

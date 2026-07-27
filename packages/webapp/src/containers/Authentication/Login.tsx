@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Formik } from 'formik';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { AppToaster as Toaster, FormattedMessage as T } from '@/components';
 import { AuthInsider } from '@/containers/Authentication/AuthInsider';
@@ -14,6 +14,7 @@ import {
   AuthInsiderCard,
 } from './_components';
 import { useAuthMetaBoot } from './AuthMetaBoot';
+import { SsoLogin, SsoErrorCallout } from './SsoLogin';
 
 const initialValues = {
   crediential: '',
@@ -26,6 +27,11 @@ const initialValues = {
  */
 export function Login() {
   const { mutateAsync: loginMutate } = useAuthLogin();
+  const location = useLocation();
+
+  // SSO failures bounce back to /auth/login?sso_error=<code> (query string, set
+  // by the OIDC callback / server). Surface it as a danger callout on the form.
+  const ssoError = new URLSearchParams(location.search).get('sso_error');
 
   const handleSubmit = (values, { setSubmitting }) => {
     loginMutate({
@@ -45,12 +51,16 @@ export function Login() {
   return (
     <AuthInsider>
       <AuthInsiderCard>
+        <SsoErrorCallout code={ssoError} />
+
         <Formik
           initialValues={initialValues}
           validationSchema={LoginSchema}
           onSubmit={handleSubmit}
           component={LoginForm}
         />
+
+        <SsoLogin />
       </AuthInsiderCard>
 
       <LoginFooterLinks />

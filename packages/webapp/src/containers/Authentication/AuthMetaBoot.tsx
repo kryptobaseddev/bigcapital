@@ -15,6 +15,10 @@ function AuthMetaBootProvider({ ...props }) {
   const state = {
     isAuthMetaLoading,
     signupDisabled: authMeta?.meta?.signup_disabled,
+    // Optional SSO gate. Undefined today (server meta does not carry the flag),
+    // which the "Sign in with Vida" button treats as "render". Only an explicit
+    // `false` hides it — forward-compatible with a future server opt-out.
+    ssoEnabled: authMeta?.meta?.sso_enabled,
   };
 
   if (isAuthMetaLoading) {
