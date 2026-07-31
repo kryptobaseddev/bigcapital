@@ -2,8 +2,14 @@
 import { lazy, Suspense } from 'react';
 import { Router, Switch, Route } from 'react-router';
 import { createBrowserHistory } from 'history';
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import {
+  QueryClientProvider,
+  QueryClient,
+  QueryCache,
+  MutationCache,
+} from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { maybeHandleUnauthorized } from '@/services/session';
 
 import '@/style/App.scss';
 
@@ -83,14 +89,25 @@ function AppInsider({ history }) {
 }
 
 /**
+ * Query client (module-level so it survives App re-renders). A global 401
+ * handler on both the query and mutation caches catches an expired/invalid
+ * session from EVERY data layer — including the sdk-ts fetch layer
+ * (fetchSubscriptions, fetchOrganizationCurrent, …) that has no interceptor of
+ * its own — and drops the user to the login page instead of looping on 401s in
+ * a broken dashboard.
+ */
+const queryClient = new QueryClient({
+  ...queryConfig,
+  queryCache: new QueryCache({ onError: maybeHandleUnauthorized }),
+  mutationCache: new MutationCache({ onError: maybeHandleUnauthorized }),
+});
+
+/**
  * Core application.
  */
 export default function App() {
   // Browser history.
   const history = createBrowserHistory();
-
-  // Query client.
-  const queryClient = new QueryClient(queryConfig);
 
   return (
     <QueryClientProvider client={queryClient}>

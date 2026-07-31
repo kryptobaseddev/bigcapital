@@ -49,6 +49,11 @@ export default function useApiRequest() {
     instance.interceptors.response.use(
       (response) => response,
       (error) => {
+        // Network / CORS / aborted requests have no `response`; bail rather than
+        // throwing a TypeError that masks the underlying error.
+        if (!error?.response) {
+          return Promise.reject(error);
+        }
         const { status, data } = error.response;
 
         if (status >= 500) {
