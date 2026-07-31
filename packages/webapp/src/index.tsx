@@ -12,6 +12,20 @@ import App from '@/components/App';
 import * as serviceWorker from '@/serviceWorker';
 import { store, persistor } from '@/store/create-store';
 
+// Auto-recover from stale build chunks after a deploy. When a cached index.html
+// references hashed chunks that were replaced on the server, the dynamic import
+// 404s and Vite fires `vite:preloadError`. Reload once (rate-limited) to fetch
+// the fresh index.html + chunks instead of crashing into the error boundary.
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', () => {
+    const KEY = 'bc:chunkReloadAt';
+    const last = Number(sessionStorage.getItem(KEY) || 0);
+    if (Date.now() - last < 10000) return; // never loop on a genuinely broken deploy
+    sessionStorage.setItem(KEY, String(Date.now()));
+    window.location.reload();
+  });
+}
+
 ReactDOM.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
